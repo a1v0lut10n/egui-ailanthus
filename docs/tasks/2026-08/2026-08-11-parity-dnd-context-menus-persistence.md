@@ -1,7 +1,7 @@
 ---
 date: 2026-08-11
 type: task
-status: planned
+status: done
 affects:
   - docs/architecture/components/tree-view.md
 components: [tree-view, examples]
@@ -34,10 +34,13 @@ requirement before egui_ltreeview can be considered fully replaced.
    removal, external-drop actions.
 2. Context menus: per-node closure + tree-wide fallback (selection /
    single-node / empty-space variants).
-3. `serde` cargo feature persisting `TreeViewState` (openness + selection),
-   consistent with programmatic expansion and `DirOpened`/`DirClosed`
-   actions.
-4. Examples covering each; playground example exercising all settings.
+3. `persistence` cargo feature persisting `TreeViewState` (openness +
+   selection), consistent with programmatic expansion and
+   `DirOpened`/`DirClosed` actions.
+4. Examples covering each feature. (2026-08-12 scope change, agreed: the
+   playground example moves to the CI/wasm-demo task; in its place this task
+   gained per-row AccessKit nodes, headless `egui_kittest` interaction
+   tests, and egui-MCP inspection wiring for the examples.)
 
 ## Explicitly out of scope
 

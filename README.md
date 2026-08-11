@@ -32,6 +32,28 @@ let (_response, actions) = TreeView::new(egui::Id::new("tree"))
     });
 ```
 
+## Testing and inspection
+
+Interaction is covered by headless [`egui_kittest`](https://crates.io/crates/egui_kittest)
+tests (`tests/interaction.rs`): every visible row registers an AccessKit node
+(role `TreeItem`, label, bounds, expanded/selected), so tests — and assistive
+technology — can find and click rows by label.
+
+The same AccessKit nodes make the tree drivable through the
+[egui MCP server](https://github.com/rerun-io/kittest_inspector). With
+`egui-mcp` installed (`cargo install --git
+https://github.com/rerun-io/kittest_inspector egui_mcp`) and this repo's
+`.mcp.json`:
+
+```sh
+EGUI_INSPECTION=1 cargo run --example drag_drop
+```
+
+then `attach` from the MCP client and use `query_tree` / `click` / `drag` /
+`screenshot`. Note: the inspection server needs a visible window (it is not
+headless), and an `egui-mcp` binary built against an older egui may mismatch
+on the wire format — reinstall it when in doubt.
+
 ## Status
 
 Early development. The core widget (rendering, selection, keyboard

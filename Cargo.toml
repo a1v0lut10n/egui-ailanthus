@@ -13,9 +13,20 @@ include = ["src/**/*.rs", "Cargo.toml", "LICENSE-MIT", "LICENSE-APACHE", "README
 
 [dependencies]
 egui = { version = "0.36", default-features = false }
+serde = { version = "1", features = ["derive"], optional = true }
 
 [dev-dependencies]
-eframe = "0.36"
+# `inspection` lets any example serve the egui inspection protocol when run
+# with EGUI_INSPECTION=1, so the egui MCP server can drive it.
+eframe = { version = "0.36", features = ["persistence", "inspection"] }
+egui_kittest = "0.36.1"
 
 [features]
 default = []
+# Persist tree state (openness + selection) in egui memory across sessions.
+# Adds serde bounds to node ids.
+persistence = ["dep:serde", "egui/persistence"]
+
+[[example]]
+name = "persistence"
+required-features = ["persistence"]

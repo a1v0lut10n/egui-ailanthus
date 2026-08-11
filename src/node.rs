@@ -6,6 +6,8 @@ use crate::icon::IconSpec;
 pub type TrailingFn<'a> = Box<dyn FnMut(&mut Ui) + 'a>;
 /// Boxed row-paint hook.
 pub type RowPaintFn<'a> = Box<dyn FnMut(&Painter, &RowContext) + 'a>;
+/// Boxed per-node context-menu closure.
+pub type ContextMenuFn<'a> = Box<dyn FnMut(&mut Ui) + 'a>;
 
 /// Everything the row painter knows about a row, handed to the
 /// [`row_paint`](Node::row_paint) hook so custom decoration can react to
@@ -45,7 +47,9 @@ pub struct Node<'a, Id> {
     pub(crate) badge: Option<Badge>,
     pub(crate) trailing: Option<TrailingFn<'a>>,
     pub(crate) row_paint: Option<RowPaintFn<'a>>,
+    pub(crate) context_menu: Option<ContextMenuFn<'a>>,
     pub(crate) default_open: bool,
+    pub(crate) drop_allowed: Option<bool>,
 }
 
 impl<'a, Id> Node<'a, Id> {
@@ -57,7 +61,9 @@ impl<'a, Id> Node<'a, Id> {
             badge: None,
             trailing: None,
             row_paint: None,
+            context_menu: None,
             default_open: true,
+            drop_allowed: None,
         }
     }
 
@@ -97,6 +103,19 @@ impl<'a, Id> Node<'a, Id> {
     /// (default `true`).
     pub fn default_open(mut self, open: bool) -> Self {
         self.default_open = open;
+        self
+    }
+
+    /// Whether other nodes may be dropped *into* this node
+    /// (default: directories yes, leaves no).
+    pub fn drop_allowed(mut self, allowed: bool) -> Self {
+        self.drop_allowed = Some(allowed);
+        self
+    }
+
+    /// A context menu for this node, shown on right-click.
+    pub fn context_menu(mut self, add: impl FnMut(&mut Ui) + 'a) -> Self {
+        self.context_menu = Some(Box::new(add));
         self
     }
 }

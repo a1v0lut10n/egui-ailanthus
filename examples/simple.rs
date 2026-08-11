@@ -15,16 +15,17 @@ struct App;
 impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ui, |ui| {
+            let node = |id: &str| Node::new(id.to_owned()).label(id.rsplit('/').next().unwrap());
             let (_response, actions) = TreeView::new(egui::Id::new("tree")).show(
                 ui,
-                |tree: &mut egui_ailanthus::TreeBuilder<'_, '_, &'static str>| {
-                    tree.dir(Node::new("root").label("Root"));
-                    tree.dir(Node::new("src").label("src"));
-                    tree.leaf(Node::new("src/lib.rs").label("lib.rs"));
-                    tree.leaf(Node::new("src/main.rs").label("main.rs"));
+                |tree: &mut egui_ailanthus::TreeBuilder<'_, '_, '_, String>| {
+                    tree.dir(node("root"));
+                    tree.dir(node("src"));
+                    tree.leaf(node("src/lib.rs"));
+                    tree.leaf(node("src/main.rs"));
                     tree.close_dir();
-                    tree.leaf(Node::new("Cargo.toml").label("Cargo.toml"));
-                    tree.leaf(Node::new("README.md").label("README.md"));
+                    tree.leaf(node("Cargo.toml"));
+                    tree.leaf(node("README.md"));
                     tree.close_dir();
                 },
             );

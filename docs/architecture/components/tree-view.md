@@ -4,7 +4,7 @@ last-verified: 2026-08-12
 decisions:
   - docs/design/2026-08-11-fresh-crate-tracking-egui-0-36.md
   - docs/design/2026-08-11-decoration-first-api.md
-aspects: [egui-version-tracking, wasm-compatibility]
+aspects: [egui-version-tracking, wasm-compatibility, accessibility]
 ---
 
 # tree-view
@@ -36,25 +36,52 @@ full tree each frame.
 
 ## Input pass
 
-After the build closure, one whole-widget `ui.interact` covers the union of
-row rects. Clicks resolve to a row by position: closer clicks toggle openness
-only; row clicks select (single, or toggle/range with the configured
-modifiers); clicking a dir row with no modifier also toggles it; double-click
-activates leaves. Keyboard (when focused, with a focus-lock filter): arrows
-navigate/collapse/expand (left jumps to parent), Enter activates. All state
-mutations happen here, after the build pass, and are reported as `Action`s:
-`SetSelected`, `Activate`, `DirOpened`, `DirClosed` — every payload a
-`NodeInfo { id, is_dir }`, so callers never re-derive dir-vs-leaf.
+After the build closure, one whole-widget `ui.interact`
+(`Sense::click_and_drag`) covers the union of row rects. Clicks resolve to a
+row by position: closer clicks toggle openness only; row clicks select
+(single, or toggle/range with the configured modifiers); clicking a dir row
+with no modifier also toggles it; double-click activates leaves. Keyboard
+(when focused, with a focus-lock filter): arrows navigate/collapse/expand
+(left jumps to parent), Enter activates. All state mutations happen here,
+after the build pass, and are reported as `Action`s: `SetSelected`,
+`Activate`, `DirOpened`, `DirClosed`, `Drag`, `Move`, `MoveExternal` — node
+payloads are `NodeInfo { id, is_dir }`, so callers never re-derive
+dir-vs-leaf.
 
-## Programmatic state
+## Drag & drop
 
-`TreeViewState::{expand, collapse, expand_parents_of, reveal, scroll_to,
-set_selected}`. `reveal`/`expand_parents_of` are deferred: the next build
-pass discovers the ancestor chain (a `RevealMatch`), which is then applied —
-so callers never supply parent chains. Lazy loading is event-driven: react to
-`Action::DirOpened` (see `examples/lazy_loading.rs`).
+The drag source row is resolved at the pointer's *press origin* (by the time
+`drag_started` fires the pointer has moved). Dragging a selected row drags
+the whole selection, simplified (descendants of dragged dirs removed); an
+unselected row drags alone. Past a 6 px threshold the drag activates: dragged
+rows fade in place and ghosts follow the pointer on the tooltip layer. The
+drop position is quarter-based (`Before`/`After` on edges, `First`/`Last`
+into dirs honoring `Node::drop_allowed`), with self-and-descendant drops
+rejected by an ancestor climb. Each frame a marker shape (line or dir
+outline) is reserved via `ShapeIdx`; `Action::Drag` exposes it so the app can
+veto via `DragAndDrop::remove_marker`. Release emits `Action::Move` (or
+`MoveExternal` outside the tree); the application applies the move to its own
+model (`examples/drag_drop.rs`).
 
-## Not yet implemented
+## Context menus
 
-Drag & drop, context menus, serde persistence — see
-`docs/tasks/2026-08/2026-08-11-parity-dnd-context-menus-persistence.md`.
+`Node::context_menu` closures are retained by the build pass (builder
+lifetime `'nodes`) so the input pass can render them same-frame: right-click
+selects the row (if unselected), records `ContextMenuState`, and opens an
+`egui::Popup` (kind `Menu`, anchored at the click position, close-on-click).
+Rows without a menu fall back to `TreeView::fallback_context_menu`, which
+also serves right-clicks on empty space.
+
+## Persistence
+
+The `persistence` cargo feature derives serde on `TreeViewState` (openness +
+selection; transient drag/reveal state skipped) and switches
+`TreeView::show`'s memory backing from `get_temp` to `get_persisted`, which
+adds serde bounds to node ids (`examples/persistence.rs`).
+
+## Accessibility
+
+See the `accessibility` aspect: the build pass registers an AccessKit node
+per visible row and marks the container `Role::Tree`; interaction tests in
+`tests/interaction.rs` drive the widget through those nodes with
+`egui_kittest`.

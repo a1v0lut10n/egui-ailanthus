@@ -48,7 +48,7 @@ impl App {
     }
 
     fn build_level(
-        tree: &mut egui_ailanthus::TreeBuilder<'_, '_, String>,
+        tree: &mut egui_ailanthus::TreeBuilder<'_, '_, '_, String>,
         children: &HashMap<String, Vec<(String, bool)>>,
         dir: &str,
     ) {

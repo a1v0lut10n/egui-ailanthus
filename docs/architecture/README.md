@@ -24,6 +24,7 @@ owned by aivolution-meta's `docs/README.md`; this repo's docs follow it.
 | `egui-version-tracking` | The crate builds against the latest stable egui minor; a new egui minor triggers an egui-ailanthus release. `egui` is the only mandatory dependency. |
 | `font-independence`     | No built-in visual relies on font glyph coverage (no emoji/tofu risk); built-in icons are painted with epaint primitives. |
 | `wasm-compatibility`    | Everything in the crate (and every example) compiles and runs on wasm32 as well as macOS/Windows/Linux. |
+| `accessibility`         | Every visible row registers an AccessKit node (role, label, bounds, state), so assistive tech, egui_kittest, and the egui MCP inspection server can see and target rows. |
 
 ## Litmus test
 

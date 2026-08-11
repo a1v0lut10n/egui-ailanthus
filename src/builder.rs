@@ -1,10 +1,11 @@
 use egui::{
-    Align, Id, Layout, Rect, TextStyle, TextWrapMode, UiBuilder, pos2, vec2,
+    Align, Id, LayerId, Layout, Order, Rect, TextStyle, TextWrapMode, UiBuilder, pos2, vec2,
 };
 
 use crate::{
     Node, NodeId, NodeInfo, RowContext, TreeViewSettings, TreeViewState,
     icon::{self, IconContext, IconSource},
+    node::ContextMenuFn,
     row_metrics, RowMetrics,
     state::PendingReveal,
 };
@@ -14,9 +15,19 @@ use crate::{
 pub(crate) struct Row<Id_> {
     pub info: NodeInfo<Id_>,
     pub depth: usize,
+    pub parent: Option<Id_>,
     pub rect: Rect,
     pub closer_rect: Option<Rect>,
     pub open: bool,
+    pub drop_allowed: bool,
+}
+
+/// Everything the build pass hands to the input pass.
+pub(crate) struct BuildOutput<'nodes, Id_> {
+    pub rows: Vec<Row<Id_>>,
+    pub reveal: Option<RevealMatch<Id_>>,
+    pub bounds: Option<Rect>,
+    pub context_menus: Vec<(Id_, ContextMenuFn<'nodes>)>,
 }
 
 /// A matched pending reveal: the target node plus the ancestor chain the
@@ -37,7 +48,7 @@ struct DirFrame<Id_> {
 /// Emits the tree's nodes for one frame. Handed to the build closure by
 /// [`TreeView::show`](crate::TreeView::show) /
 /// [`show_state`](crate::TreeView::show_state).
-pub struct TreeBuilder<'ui, 'state, Id_: NodeId> {
+pub struct TreeBuilder<'ui, 'state, 'nodes, Id_: NodeId> {
     ui: &'ui mut egui::Ui,
     state: &'state mut TreeViewState<Id_>,
     settings: &'state TreeViewSettings,
@@ -47,9 +58,10 @@ pub struct TreeBuilder<'ui, 'state, Id_: NodeId> {
     rows: Vec<Row<Id_>>,
     reveal: Option<RevealMatch<Id_>>,
     bounds: Option<Rect>,
+    context_menus: Vec<(Id_, ContextMenuFn<'nodes>)>,
 }
 
-impl<'ui, 'state, Id_: NodeId> TreeBuilder<'ui, 'state, Id_> {
+impl<'ui, 'state, 'nodes, Id_: NodeId> TreeBuilder<'ui, 'state, 'nodes, Id_> {
     pub(crate) fn new(
         ui: &'ui mut egui::Ui,
         state: &'state mut TreeViewState<Id_>,
@@ -67,6 +79,7 @@ impl<'ui, 'state, Id_: NodeId> TreeBuilder<'ui, 'state, Id_> {
             rows: Vec::new(),
             reveal: None,
             bounds: None,
+            context_menus: Vec::new(),
         }
     }
 
@@ -74,7 +87,7 @@ impl<'ui, 'state, Id_: NodeId> TreeBuilder<'ui, 'state, Id_> {
     /// until the matching [`close_dir`](Self::close_dir); emit them
     /// unconditionally — collapsed branches are skipped cheaply inside the
     /// builder (cull caller-side only for very large trees).
-    pub fn dir(&mut self, node: Node<'_, Id_>) -> bool {
+    pub fn dir(&mut self, node: Node<'nodes, Id_>) -> bool {
         let parents_open = self.parents_open();
         let open = self
             .state
@@ -99,7 +112,7 @@ impl<'ui, 'state, Id_: NodeId> TreeBuilder<'ui, 'state, Id_> {
     }
 
     /// Emit a leaf node.
-    pub fn leaf(&mut self, node: Node<'_, Id_>) {
+    pub fn leaf(&mut self, node: Node<'nodes, Id_>) {
         self.check_reveal(&node.id, false);
         if self.parents_open() {
             self.render_row(node, false, false);
@@ -111,15 +124,118 @@ impl<'ui, 'state, Id_: NodeId> TreeBuilder<'ui, 'state, Id_> {
         self.stack.last().map(|f| &f.id)
     }
 
-    pub(crate) fn finish(self) -> (Vec<Row<Id_>>, Option<RevealMatch<Id_>>, Option<Rect>) {
+    pub(crate) fn finish(self) -> BuildOutput<'nodes, Id_> {
         if self.reveal.is_some() {
             self.state.pending_reveal = None;
         }
-        (self.rows, self.reveal, self.bounds)
+        BuildOutput {
+            rows: self.rows,
+            reveal: self.reveal,
+            bounds: self.bounds,
+            context_menus: self.context_menus,
+        }
     }
 
     fn parents_open(&self) -> bool {
         self.stack.last().is_none_or(|f| f.cumulative_open)
+    }
+
+    /// Register an AccessKit node for a visible row (no-op unless an
+    /// integration enabled AccessKit), so assistive tech, `egui_kittest`
+    /// queries, and the egui MCP inspection server can see and target rows.
+    #[allow(clippy::too_many_arguments)]
+    fn accesskit_row(
+        &self,
+        id: &Id_,
+        label: &str,
+        is_dir: bool,
+        open: bool,
+        is_selected: bool,
+        depth: usize,
+        rect: Rect,
+    ) {
+        use egui::accesskit;
+        let ak_id = self.interact_id.with(("row", id));
+        let label = label.to_owned();
+        self.ui.ctx().accesskit_node_builder(ak_id, |node| {
+            node.set_role(accesskit::Role::TreeItem);
+            node.set_label(label);
+            node.set_level(depth + 1);
+            node.set_bounds(accesskit::Rect {
+                x0: rect.min.x.into(),
+                y0: rect.min.y.into(),
+                x1: rect.max.x.into(),
+                y1: rect.max.y.into(),
+            });
+            if is_dir {
+                node.set_expanded(open);
+            }
+            if is_selected {
+                node.set_selected(true);
+            } else {
+                node.clear_selected();
+            }
+            node.add_action(accesskit::Action::Click);
+        });
+    }
+
+    /// Paint a dragged row's ghost at the pointer, on the tooltip layer.
+    fn paint_drag_ghost(
+        &self,
+        node: &Node<'nodes, Id_>,
+        galley: &std::sync::Arc<egui::Galley>,
+        is_dir: bool,
+        open: bool,
+    ) {
+        let Some(drag) = self.state.drag.as_ref() else {
+            return;
+        };
+        let Some(pointer) = self.ui.ctx().pointer_hover_pos() else {
+            return;
+        };
+        let Some(index) = drag.sources.iter().position(|s| s == &node.id) else {
+            return;
+        };
+        let m = self.metrics;
+        let visuals = self.ui.visuals();
+        let painter = self.ui.ctx().layer_painter(LayerId::new(
+            Order::Tooltip,
+            self.interact_id.with("drag_overlay"),
+        ));
+        let origin = pointer + vec2(12.0, index as f32 * (m.row_height * 0.9) - m.row_height * 0.5);
+        let ghost_rect = Rect::from_min_size(
+            origin,
+            vec2(
+                m.icon_size + m.gap + galley.size().x + 12.0,
+                m.row_height,
+            ),
+        );
+        painter.rect_filled(
+            ghost_rect,
+            3.0,
+            visuals.panel_fill.gamma_multiply(0.9),
+        );
+        if let Some(spec) = &node.icon {
+            let icon_slot = Rect::from_min_size(
+                pos2(ghost_rect.left() + 4.0, ghost_rect.top()),
+                vec2(m.icon_size, ghost_rect.height()),
+            );
+            let source = match (&spec.open, is_dir && open) {
+                (Some(open_source), true) => open_source,
+                _ => &spec.closed,
+            };
+            if let IconSource::Painted(icon) = source {
+                icon::paint_icon(*icon, &painter, m.icon_rect_in(icon_slot), visuals);
+            }
+        }
+        painter.galley(
+            pos2(
+                ghost_rect.left() + 4.0 + m.icon_size + m.gap,
+                ghost_rect.center().y - galley.size().y * 0.5,
+            ),
+            galley.clone(),
+            visuals.strong_text_color(),
+        );
     }
 
     fn check_reveal(&mut self, id: &Id_, is_dir: bool) {
@@ -140,7 +256,7 @@ impl<'ui, 'state, Id_: NodeId> TreeBuilder<'ui, 'state, Id_> {
         }
     }
 
-    fn render_row(&mut self, mut node: Node<'_, Id_>, is_dir: bool, open: bool) {
+    fn render_row(&mut self, mut node: Node<'nodes, Id_>, is_dir: bool, open: bool) {
         let m = self.metrics;
         let depth = self.stack.len();
         let visuals = self.ui.visuals().clone();
@@ -169,20 +285,39 @@ impl<'ui, 'state, Id_: NodeId> TreeBuilder<'ui, 'state, Id_> {
                 is_dir,
             },
             depth,
+            parent: self.stack.last().map(|f| f.id.clone()),
             rect,
             closer_rect: is_dir.then_some(closer_slot),
             open,
+            drop_allowed: node.drop_allowed.unwrap_or(is_dir),
         });
         self.bounds = Some(match self.bounds {
             Some(b) => b.union(rect),
             None => rect,
         });
 
+        if let Some(menu) = node.context_menu.take() {
+            self.context_menus.push((node.id.clone(), menu));
+        }
+
         if !self.ui.is_rect_visible(rect) {
             return; // Outside the clip rect: geometry recorded, painting skipped.
         }
 
         let is_selected = self.state.is_selected(&node.id);
+        self.accesskit_row(&node.id, galley.text(), is_dir, open, is_selected, depth, rect);
+
+        // While a drag is active, paint dragged rows as a ghost at the
+        // pointer and dim them in place.
+        let dragged = self
+            .state
+            .drag
+            .as_ref()
+            .is_some_and(|d| d.active && d.sources.contains(&node.id));
+        if dragged {
+            self.paint_drag_ghost(&node, &galley, is_dir, open);
+        }
+
         let is_hovered = self
             .ui
             .ctx()
@@ -194,7 +329,7 @@ impl<'ui, 'state, Id_: NodeId> TreeBuilder<'ui, 'state, Id_> {
         if self.settings.striped && self.rows.len() % 2 == 0 {
             painter.rect_filled(rect, 0.0, visuals.faint_bg_color);
         }
-        if is_hovered && !is_selected {
+        if is_hovered && !is_selected && self.state.drag.is_none() {
             painter.rect_filled(rect, 2.0, visuals.widgets.hovered.weak_bg_fill);
         }
         if is_selected {
@@ -293,6 +428,12 @@ impl<'ui, 'state, Id_: NodeId> TreeBuilder<'ui, 'state, Id_> {
                 );
                 add(&mut child);
             }
+        }
+
+        if dragged {
+            // Fade the in-place row while its ghost follows the pointer.
+            let fade = visuals.panel_fill.gamma_multiply(0.6);
+            self.ui.painter().rect_filled(rect, 0.0, fade);
         }
     }
 }

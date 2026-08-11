@@ -13,14 +13,50 @@ pub(crate) enum PendingReveal<Id> {
 /// The state a tree view keeps between frames: openness and selection, keyed
 /// by node id. Own one per tree (or let [`TreeView::show`](crate::TreeView::show)
 /// keep it in egui memory for you).
+///
+/// With the `persistence` cargo feature the durable parts (openness,
+/// selection) serialize; transient interaction state (pending reveals,
+/// scroll requests, drags) is skipped.
 #[derive(Clone, Debug)]
+#[cfg_attr(feature = "persistence", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "persistence",
+    serde(bound(
+        serialize = "Id: serde::Serialize",
+        deserialize = "Id: serde::de::DeserializeOwned + Eq + std::hash::Hash"
+    ))
+)]
 pub struct TreeViewState<Id> {
     openness: HashMap<Id, bool>,
     selected: Vec<Id>,
     pivot: Option<Id>,
     cursor: Option<Id>,
+    #[cfg_attr(feature = "persistence", serde(skip))]
     pub(crate) pending_reveal: Option<PendingReveal<Id>>,
+    #[cfg_attr(feature = "persistence", serde(skip))]
     scroll_to: Option<Id>,
+    #[cfg_attr(feature = "persistence", serde(skip))]
+    pub(crate) drag: Option<DragState<Id>>,
+    #[cfg_attr(feature = "persistence", serde(skip))]
+    pub(crate) context_menu: Option<ContextMenuState<Id>>,
+}
+
+/// An in-progress drag: the (simplified) source set and where it started.
+#[derive(Clone, Debug)]
+pub(crate) struct DragState<Id> {
+    /// Dragged nodes with descendants of dragged dirs removed.
+    pub sources: Vec<Id>,
+    pub start_pos: egui::Pos2,
+    /// True once the pointer moved past the drag threshold.
+    pub active: bool,
+}
+
+/// An open context menu: which node (None = fallback over empty space /
+/// selection) and where it was summoned.
+#[derive(Clone, Debug)]
+pub(crate) struct ContextMenuState<Id> {
+    pub node: Option<Id>,
+    pub pos: egui::Pos2,
 }
 
 impl<Id> Default for TreeViewState<Id> {
@@ -32,6 +68,8 @@ impl<Id> Default for TreeViewState<Id> {
             cursor: None,
             pending_reveal: None,
             scroll_to: None,
+            drag: None,
+            context_menu: None,
         }
     }
 }
