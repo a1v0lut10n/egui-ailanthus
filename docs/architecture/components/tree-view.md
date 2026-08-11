@@ -1,7 +1,9 @@
 ---
 type: architecture-component
-last-verified: 2026-08-11
-decisions: [docs/design/2026-08-11-fresh-crate-tracking-egui-0-36.md]
+last-verified: 2026-08-12
+decisions:
+  - docs/design/2026-08-11-fresh-crate-tracking-egui-0-36.md
+  - docs/design/2026-08-11-decoration-first-api.md
 aspects: [egui-version-tracking, wasm-compatibility]
 ---
 
