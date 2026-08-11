@@ -1,0 +1,21 @@
+[package]
+name = "egui_ailanthus"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+authors = ["Aivolution GmbH"]
+description = "A decorated tree view widget for egui, named after Ailanthus altissima — the tree of heaven."
+repository = "https://github.com/a1v0lut10n/egui-ailanthus"
+license = "MIT OR Apache-2.0"
+keywords = ["egui", "gui", "widget", "tree", "treeview"]
+categories = ["gui"]
+include = ["src/**/*.rs", "Cargo.toml", "LICENSE-MIT", "LICENSE-APACHE", "README.md"]
+
+[dependencies]
+egui = { version = "0.36", default-features = false }
+
+[dev-dependencies]
+eframe = "0.36"
+
+[features]
+default = []
