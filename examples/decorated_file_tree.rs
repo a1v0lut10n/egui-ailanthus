@@ -106,12 +106,13 @@ impl App {
                     Node::new("crate/Cargo.toml")
                         .label("Cargo.toml")
                         .icon(Icon::FileCargo)
-                        // A row-paint hook: wash the row background with an accent.
+                        // A row-paint hook: wash the row background with an
+                        // accent. Avoid hues close to the selection color.
                         .row_paint(|painter, row| {
                             painter.rect_filled(
                                 row.rect,
                                 egui::CornerRadius::ZERO,
-                                Color32::from_rgb(0x64, 0xA4, 0xE8).gamma_multiply(0.12),
+                                Color32::from_rgb(0xC8, 0x8A, 0x3C).gamma_multiply(0.14),
                             );
                         }),
                 );
