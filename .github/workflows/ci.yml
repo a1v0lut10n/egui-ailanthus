@@ -55,9 +55,12 @@ jobs:
         with:
           path: demo/dist
 
+  # Pages needs a public repo (or a paid plan). Once available: enable Pages
+  # with "Source: GitHub Actions" and set the repo variable DEPLOY_PAGES=true.
+  # Until then the wasm job's artifact is the downloadable demo.
   deploy-demo:
     name: deploy web demo to GitHub Pages
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_PAGES == 'true'
     needs: wasm
     runs-on: ubuntu-latest
     permissions:
