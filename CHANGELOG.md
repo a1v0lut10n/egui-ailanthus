@@ -4,7 +4,7 @@ All notable changes to `egui_ailanthus` are documented here. The crate tracks
 the latest stable egui minor and releases in lockstep with it (see
 `docs/reference/release-checklist.md`).
 
-## Unreleased
+## 0.2.0 — 2026-08-13
 
 - New painted icons, inspired by crates.io's source view: `Icon::FileCargo`
   (Cargo.toml — page with a miniature crate), `Icon::FileLock` (Cargo.lock —
