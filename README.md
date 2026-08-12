@@ -5,11 +5,10 @@
 A decorated tree view widget for [egui](https://github.com/emilk/egui), named
 after *Ailanthus altissima* — the tree of heaven.
 
-**Playground demo** (`demo/`) — every setting and decoration slot, with a
-live action log. Natively: `cargo run -p egui_ailanthus_demo`; on the web:
-`trunk serve` in `demo/` (CI builds the wasm bundle as an artifact; the
-GitHub Pages deploy at <https://a1v0lut10n.github.io/egui-ailanthus/> switches
-on once the repo is public — set the `DEPLOY_PAGES` repo variable to `true`).
+**[Live playground demo](https://a1v0lut10n.github.io/egui-ailanthus/)** —
+every setting and decoration slot, with a live action log, running as
+WebAssembly on GitHub Pages. Locally: `cargo run -p egui_ailanthus_demo`, or
+`trunk serve` in `demo/` for the web build.
 
 `egui_ailanthus` renders trees whose nodes carry meaningful decoration: a PDF
 icon for a PDF file, a Rust icon for Rust source, open/closed folder and crate
@@ -64,10 +63,12 @@ on the wire format — reinstall it when in doubt.
 
 ## Status
 
-Early development. The core widget (rendering, selection, keyboard
-navigation, decoration) is being built first; drag & drop, context menus, and
-persistence follow. See `docs/tasks/` for the plan and `docs/design/` for the
-decision records.
+Functional and tested: rendering, decoration, multi-selection, keyboard
+navigation, activation, drag & drop (with drop veto), context menus, state
+persistence, AccessKit, and clip-rect culling are all in place, with headless
+interaction tests and CI on Linux/macOS/Windows/wasm. The API may still shift
+in 0.x releases as the first downstream migrations land. See `docs/design/`
+for the decision records.
 
 ## Prior art
 
