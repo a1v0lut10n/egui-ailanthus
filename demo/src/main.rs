@@ -71,6 +71,8 @@ fn demo_model() -> Vec<Entry> {
                             vec![Entry::leaf(DEEP_LEAF, "lib.rs"), Entry::leaf(13, "icon.rs")],
                         ),
                         Entry::leaf(14, "Cargo.toml"),
+                        Entry::leaf(23, "Cargo.lock"),
+                        Entry::leaf(24, "README.md"),
                     ],
                 ),
                 Entry::dir(
@@ -81,6 +83,7 @@ fn demo_model() -> Vec<Entry> {
                         Entry::leaf(17, "index.html"),
                         Entry::leaf(18, "notes.md"),
                         Entry::leaf(19, "logo.png"),
+                        Entry::leaf(25, "meta.json"),
                     ],
                 ),
             ],
@@ -95,12 +98,21 @@ fn demo_model() -> Vec<Entry> {
 }
 
 fn icon_for(name: &str) -> Icon {
+    match name {
+        "Cargo.toml" => return Icon::FileCargo,
+        "Cargo.lock" => return Icon::FileLock,
+        _ => {}
+    }
+    if name.to_ascii_lowercase().starts_with("readme") {
+        return Icon::FileReadme;
+    }
     match name.rsplit('.').next() {
         Some("rs") => Icon::FileRust,
         Some("pdf") => Icon::FilePdf,
         Some("html") => Icon::FileHtml,
         Some("md") => Icon::FileMarkdown,
         Some("png") => Icon::FileImage,
+        Some("json") => Icon::FileJson,
         _ => Icon::File,
     }
 }
@@ -202,11 +214,12 @@ impl DemoApp {
                 };
                 let mut node = Node::new(entry.id).label(&entry.name).icon(icon);
                 if entry.id == ARCHIVE_DIR {
-                    // Custom row decoration: a warning underline.
+                    // Custom row decoration: an amber background wash.
                     node = node.row_paint(|painter, row| {
-                        painter.line_segment(
-                            [row.rect.left_bottom(), row.rect.right_bottom()],
-                            egui::Stroke::new(1.0, egui::Color32::from_rgb(0xC8, 0x8A, 0x3C)),
+                        painter.rect_filled(
+                            row.rect,
+                            egui::CornerRadius::ZERO,
+                            egui::Color32::from_rgb(0xC8, 0x8A, 0x3C).gamma_multiply(0.14),
                         );
                     });
                 }

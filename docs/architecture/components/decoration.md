@@ -1,6 +1,6 @@
 ---
 type: architecture-component
-last-verified: 2026-08-12
+last-verified: 2026-08-13
 decisions:
   - docs/design/2026-08-11-fresh-crate-tracking-egui-0-36.md
   - docs/design/2026-08-11-decoration-first-api.md
@@ -32,10 +32,11 @@ Each node row has four decoration points, set fluently on `Node`:
 `IconSource` is one of:
 
 - `Painted(Icon)` — the built-in set (folder open/closed, crate open/closed,
-  generic file page, Rust, PDF, HTML, Markdown, image), drawn with epaint
-  primitives in `paint_icon`. Colors are theme-toned (`dark_mode`-aware);
-  page-style icons use single ASCII letters or painted glyph shapes, never
-  emoji — see the `font-independence` aspect.
+  generic file page, Rust, PDF, HTML, Markdown, image, Cargo manifest,
+  lockfile, README, JSON), drawn with epaint primitives in `paint_icon`.
+  `Icon` is `#[non_exhaustive]` so the set can grow without breakage. Colors
+  are theme-toned (`dark_mode`-aware); page-style icons use ASCII glyphs or
+  painted shapes, never emoji — see the `font-independence` aspect.
 - `Image(egui::ImageSource)` — any egui image; the caller is responsible for
   installing image loaders.
 - `Custom(IconPainter)` — a closure receiving `&mut Ui` and an `IconContext`

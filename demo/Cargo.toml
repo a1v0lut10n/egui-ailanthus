@@ -8,9 +8,14 @@ description = "Playground demo for egui_ailanthus: every setting and decoration,
 
 [dependencies]
 egui = "0.36"
-eframe = "0.36"
 egui_ailanthus = { path = ".." }
 
+# `inspection` (native only) lets the demo serve the egui inspection protocol
+# when run with EGUI_INSPECTION=1, so the egui MCP server can drive it.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+eframe = { version = "0.36", features = ["inspection"] }
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+eframe = "0.36"
 wasm-bindgen-futures = "0.4"
 web-sys = { version = "0.3", features = ["Window", "Document", "Element", "HtmlCanvasElement"] }

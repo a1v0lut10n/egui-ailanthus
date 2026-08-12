@@ -8,6 +8,7 @@ use egui::{
 /// Every icon is drawn with epaint primitives — theme-aware, crisp at any
 /// scale and DPI, no font-glyph or image-asset dependency, wasm-safe.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Icon {
     FolderClosed,
     FolderOpen,
@@ -20,6 +21,14 @@ pub enum Icon {
     FileHtml,
     FileMarkdown,
     FileImage,
+    /// A Cargo manifest (`Cargo.toml`): page with a miniature crate.
+    FileCargo,
+    /// A lockfile (`Cargo.lock`): page with a padlock.
+    FileLock,
+    /// A README: page with an open book.
+    FileReadme,
+    /// JSON: page with curly braces.
+    FileJson,
 }
 
 impl Icon {
@@ -195,6 +204,52 @@ pub(crate) fn paint_icon(icon: Icon, painter: &Painter, rect: Rect, visuals: &Vi
             page(painter, rect, visuals);
             picture(painter, rect, visuals);
         }
+        Icon::FileCargo => {
+            page(painter, rect, visuals);
+            // A miniature open crate as the overlay, reusing its tones — the
+            // lid flaps keep it box-like even at small sizes.
+            let mini = Rect::from_center_size(
+                rect.center() + vec2(0.0, rect.height() * 0.20),
+                vec2(rect.width() * 0.52, rect.height() * 0.44),
+            );
+            krate(painter, mini, visuals, true);
+        }
+        Icon::FileLock => {
+            page(painter, rect, visuals);
+            padlock(
+                painter,
+                rect,
+                tone(
+                    visuals,
+                    Color32::from_rgb(0x8A, 0x70, 0x24),
+                    Color32::from_rgb(0xD0, 0xA8, 0x50),
+                ),
+            );
+        }
+        Icon::FileReadme => {
+            page(painter, rect, visuals);
+            book(
+                painter,
+                rect,
+                tone(
+                    visuals,
+                    Color32::from_rgb(0x2E, 0x8C, 0x78),
+                    Color32::from_rgb(0x5A, 0xC0, 0xA8),
+                ),
+            );
+        }
+        Icon::FileJson => {
+            page(painter, rect, visuals);
+            braces(
+                painter,
+                rect,
+                tone(
+                    visuals,
+                    Color32::from_rgb(0x8A, 0x6D, 0x1A),
+                    Color32::from_rgb(0xD9, 0xB8, 0x4A),
+                ),
+            );
+        }
     }
 }
 
@@ -324,6 +379,56 @@ fn chevrons(painter: &Painter, rect: Rect, color: Color32) {
         painter.line_segment([apex + vec2(back, -s), apex], stroke);
         painter.line_segment([apex, apex + vec2(back, s)], stroke);
     }
+}
+
+fn padlock(painter: &Painter, rect: Rect, color: Color32) {
+    let c = rect.center() + vec2(0.0, rect.height() * 0.18);
+    let w = rect.width() * 0.36;
+    let h = rect.height() * 0.26;
+    // Shackle: a stroked circle whose lower half the body covers.
+    painter.circle_stroke(pos2(c.x, c.y - h * 0.5), w * 0.30, Stroke::new(1.2, color));
+    painter.rect_filled(
+        Rect::from_center_size(c, vec2(w, h)),
+        CornerRadius::same(1),
+        color,
+    );
+}
+
+fn book(painter: &Painter, rect: Rect, color: Color32) {
+    let c = rect.center() + vec2(0.0, rect.height() * 0.18);
+    let w = rect.width() * 0.30; // half-span of the open book
+    let h = rect.height() * 0.20;
+    // Two page panels meeting at the spine, outer edges raised.
+    painter.add(egui::Shape::convex_polygon(
+        vec![
+            pos2(c.x, c.y - h * 0.5),
+            pos2(c.x - w, c.y - h),
+            pos2(c.x - w, c.y + h * 0.5),
+            pos2(c.x, c.y + h),
+        ],
+        color,
+        Stroke::NONE,
+    ));
+    painter.add(egui::Shape::convex_polygon(
+        vec![
+            pos2(c.x, c.y - h * 0.5),
+            pos2(c.x, c.y + h),
+            pos2(c.x + w, c.y + h * 0.5),
+            pos2(c.x + w, c.y - h),
+        ],
+        color.gamma_multiply(0.8),
+        Stroke::NONE,
+    ));
+}
+
+fn braces(painter: &Painter, rect: Rect, color: Color32) {
+    painter.text(
+        rect.center() + vec2(0.0, rect.height() * 0.12),
+        Align2::CENTER_CENTER,
+        "{}",
+        FontId::proportional(rect.height() * 0.5),
+        color,
+    );
 }
 
 fn picture(painter: &Painter, rect: Rect, visuals: &Visuals) {

@@ -105,14 +105,30 @@ impl App {
                 tree.leaf(
                     Node::new("crate/Cargo.toml")
                         .label("Cargo.toml")
-                        .icon(Icon::File)
-                        // A row-paint hook: underline this row with an accent.
+                        .icon(Icon::FileCargo)
+                        // A row-paint hook: wash the row background with an accent.
                         .row_paint(|painter, row| {
-                            painter.line_segment(
-                                [row.rect.left_bottom(), row.rect.right_bottom()],
-                                egui::Stroke::new(1.0, Color32::from_rgb(0x64, 0xA4, 0xE8)),
+                            painter.rect_filled(
+                                row.rect,
+                                egui::CornerRadius::ZERO,
+                                Color32::from_rgb(0x64, 0xA4, 0xE8).gamma_multiply(0.12),
                             );
                         }),
+                );
+                tree.leaf(
+                    Node::new("crate/Cargo.lock")
+                        .label("Cargo.lock")
+                        .icon(Icon::FileLock),
+                );
+                tree.leaf(
+                    Node::new("crate/README.md")
+                        .label("README.md")
+                        .icon(Icon::FileReadme),
+                );
+                tree.leaf(
+                    Node::new("crate/meta.json")
+                        .label("meta.json")
+                        .icon(Icon::FileJson),
                 );
                 tree.close_dir();
             });

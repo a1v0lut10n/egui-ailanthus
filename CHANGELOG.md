@@ -4,6 +4,18 @@ All notable changes to `egui_ailanthus` are documented here. The crate tracks
 the latest stable egui minor and releases in lockstep with it (see
 `docs/reference/release-checklist.md`).
 
+## Unreleased
+
+- New painted icons, inspired by crates.io's source view: `Icon::FileCargo`
+  (Cargo.toml — page with a miniature crate), `Icon::FileLock` (Cargo.lock —
+  page with a padlock), `Icon::FileReadme` (page with an open book), and
+  `Icon::FileJson` (page with curly braces).
+- **Breaking:** `Icon` is now `#[non_exhaustive]`, so the built-in set can
+  keep growing without further breakage.
+- Demo/example row-paint showcases now use a background wash instead of an
+  underline (an underline at the row's bottom edge read as a divider between
+  rows).
+
 ## 0.1.0 — 2026-08-13
 
 First release, built against **egui 0.36**.
