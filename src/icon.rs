@@ -116,10 +116,14 @@ pub(crate) fn paint_closer(painter: &Painter, rect: Rect, openness: f32, color: 
     let size = rect.width().min(rect.height()) * 0.32;
     let rot = Rot2::from_angle(openness * std::f32::consts::FRAC_PI_2);
     // Right-pointing triangle, rotated toward down-pointing as it opens.
-    let points = [vec2(size, 0.0), vec2(-size * 0.5, size * 0.87), vec2(-size * 0.5, -size * 0.87)]
-        .iter()
-        .map(|v| center + rot * *v)
-        .collect();
+    let points = [
+        vec2(size, 0.0),
+        vec2(-size * 0.5, size * 0.87),
+        vec2(-size * 0.5, -size * 0.87),
+    ]
+    .iter()
+    .map(|v| center + rot * *v)
+    .collect();
     painter.add(egui::Shape::convex_polygon(points, color, Stroke::NONE));
 }
 
@@ -138,19 +142,54 @@ pub(crate) fn paint_icon(icon: Icon, painter: &Painter, rect: Rect, visuals: &Vi
         }
         Icon::FileRust => {
             page(painter, rect, visuals);
-            letter(painter, rect, "R", tone(visuals, Color32::from_rgb(0xB4, 0x54, 0x14), Color32::from_rgb(0xF0, 0x8A, 0x3C)));
+            letter(
+                painter,
+                rect,
+                "R",
+                tone(
+                    visuals,
+                    Color32::from_rgb(0xB4, 0x54, 0x14),
+                    Color32::from_rgb(0xF0, 0x8A, 0x3C),
+                ),
+            );
         }
         Icon::FilePdf => {
             page(painter, rect, visuals);
-            letter(painter, rect, "P", tone(visuals, Color32::from_rgb(0xC0, 0x32, 0x32), Color32::from_rgb(0xE8, 0x5A, 0x5A)));
+            letter(
+                painter,
+                rect,
+                "P",
+                tone(
+                    visuals,
+                    Color32::from_rgb(0xC0, 0x32, 0x32),
+                    Color32::from_rgb(0xE8, 0x5A, 0x5A),
+                ),
+            );
         }
         Icon::FileHtml => {
             page(painter, rect, visuals);
-            chevrons(painter, rect, tone(visuals, Color32::from_rgb(0xC8, 0x4A, 0x1E), Color32::from_rgb(0xF0, 0x7A, 0x46)));
+            chevrons(
+                painter,
+                rect,
+                tone(
+                    visuals,
+                    Color32::from_rgb(0xC8, 0x4A, 0x1E),
+                    Color32::from_rgb(0xF0, 0x7A, 0x46),
+                ),
+            );
         }
         Icon::FileMarkdown => {
             page(painter, rect, visuals);
-            letter(painter, rect, "M", tone(visuals, Color32::from_rgb(0x2E, 0x6E, 0xB4), Color32::from_rgb(0x64, 0xA4, 0xE8)));
+            letter(
+                painter,
+                rect,
+                "M",
+                tone(
+                    visuals,
+                    Color32::from_rgb(0x2E, 0x6E, 0xB4),
+                    Color32::from_rgb(0x64, 0xA4, 0xE8),
+                ),
+            );
         }
         Icon::FileImage => {
             page(painter, rect, visuals);
@@ -255,7 +294,11 @@ fn page(painter: &Painter, rect: Rect, visuals: &Visuals) {
     ));
     // Folded corner.
     painter.add(egui::Shape::convex_polygon(
-        vec![pos2(r - fold, t), pos2(r, t + fold), pos2(r - fold, t + fold)],
+        vec![
+            pos2(r - fold, t),
+            pos2(r, t + fold),
+            pos2(r - fold, t + fold),
+        ],
         outline.color.gamma_multiply(0.5),
         Stroke::NONE,
     ));

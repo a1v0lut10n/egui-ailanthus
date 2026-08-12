@@ -140,16 +140,14 @@ impl App {
                 Self::build_level(tree, &entry.children);
                 tree.close_dir();
             } else {
-                tree.leaf(
-                    Node::new(entry.id)
-                        .label(&entry.name)
-                        .icon(match entry.name.rsplit('.').next() {
-                            Some("rs") => Icon::FileRust,
-                            Some("pdf") => Icon::FilePdf,
-                            Some("md") => Icon::FileMarkdown,
-                            _ => Icon::File,
-                        }),
-                );
+                tree.leaf(Node::new(entry.id).label(&entry.name).icon(
+                    match entry.name.rsplit('.').next() {
+                        Some("rs") => Icon::FileRust,
+                        Some("pdf") => Icon::FilePdf,
+                        Some("md") => Icon::FileMarkdown,
+                        _ => Icon::File,
+                    },
+                ));
             }
         }
     }

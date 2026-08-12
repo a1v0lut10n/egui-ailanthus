@@ -1,7 +1,7 @@
 ---
 date: 2026-08-11
 type: task
-status: planned
+status: in-progress
 affects: []
 components: [examples]
 aspects: [wasm-compatibility, egui-version-tracking]

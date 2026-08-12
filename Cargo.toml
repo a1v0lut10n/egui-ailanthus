@@ -1,3 +1,6 @@
+[workspace]
+members = ["demo"]
+
 [package]
 name = "egui_ailanthus"
 version = "0.1.0"

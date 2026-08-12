@@ -24,7 +24,11 @@ impl App {
         let mut children = HashMap::new();
         children.insert(
             "/".to_owned(),
-            vec![("a".to_owned(), true), ("b".to_owned(), true), ("readme".to_owned(), false)],
+            vec![
+                ("a".to_owned(), true),
+                ("b".to_owned(), true),
+                ("readme".to_owned(), false),
+            ],
         );
         Self {
             state: TreeViewState::new(),

@@ -1,7 +1,13 @@
 # egui-ailanthus
 
+[![CI](https://github.com/a1v0lut10n/egui-ailanthus/actions/workflows/ci.yml/badge.svg)](https://github.com/a1v0lut10n/egui-ailanthus/actions/workflows/ci.yml)
+
 A decorated tree view widget for [egui](https://github.com/emilk/egui), named
 after *Ailanthus altissima* — the tree of heaven.
+
+**[Live web demo](https://a1v0lut10n.github.io/egui-ailanthus/)** — the
+playground (`demo/`) running as WebAssembly; natively:
+`cargo run -p egui_ailanthus_demo`.
 
 `egui_ailanthus` renders trees whose nodes carry meaningful decoration: a PDF
 icon for a PDF file, a Rust icon for Rust source, open/closed folder and crate

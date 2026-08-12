@@ -37,8 +37,8 @@ pub use state::TreeViewState;
 
 use builder::Row;
 use egui::{
-    Align, EventFilter, Id, Key, Modifiers, Pos2, Rect, Response, Sense, Ui, Vec2, accesskit,
-    pos2, vec2,
+    Align, EventFilter, Id, Key, Modifiers, Pos2, Rect, Response, Sense, Ui, Vec2, accesskit, pos2,
+    vec2,
 };
 use state::{ContextMenuState, DragState};
 
@@ -161,9 +161,8 @@ impl<'a> TreeView<'a> {
         build: impl FnOnce(&mut TreeBuilder<'_, '_, '_, Id_>),
     ) -> (Response, Vec<Action<Id_>>) {
         let state_id = self.id.with("ailanthus_state");
-        let mut state: TreeViewState<Id_> = ui
-            .data_mut(|d| d.get_temp(state_id))
-            .unwrap_or_default();
+        let mut state: TreeViewState<Id_> =
+            ui.data_mut(|d| d.get_temp(state_id)).unwrap_or_default();
         let result = self.show_state(ui, &mut state, build);
         ui.data_mut(|d| d.insert_temp(state_id, state));
         result
@@ -200,10 +199,9 @@ impl<'a> TreeView<'a> {
 
         // Mark the tree container for assistive tech / inspection (no-op
         // unless the integration enabled AccessKit).
-        ui.ctx()
-            .accesskit_node_builder(interact_id, |node| {
-                node.set_role(accesskit::Role::Tree);
-            });
+        ui.ctx().accesskit_node_builder(interact_id, |node| {
+            node.set_role(accesskit::Role::Tree);
+        });
 
         // Build phase: walk caller data, paint rows, collect row geometry.
         let builder::BuildOutput {
@@ -231,7 +229,14 @@ impl<'a> TreeView<'a> {
 
         self.handle_pointer(ui, state, &rows, &response, &mut actions);
         self.handle_drag(ui, state, &rows, full_rect, &response, &mut actions);
-        self.handle_context_menu(ui, state, &rows, &response, &mut context_menus, &mut actions);
+        self.handle_context_menu(
+            ui,
+            state,
+            &rows,
+            &response,
+            &mut context_menus,
+            &mut actions,
+        );
         self.handle_keys(ui, state, &rows, &response, &mut actions);
         self.apply_reveal(ui, state, reveal, &mut actions);
 
@@ -351,15 +356,11 @@ impl<'a> TreeView<'a> {
             && let Some(drag) = state.drag.take()
             && drag.active
         {
-            let sources: Vec<NodeInfo<Id_>> = drag
-                .sources
-                .iter()
-                .map(|id| info_for(rows, id))
-                .collect();
+            let sources: Vec<NodeInfo<Id_>> =
+                drag.sources.iter().map(|id| info_for(rows, id)).collect();
             state.drag = Some(drag); // keep for drop_position's source checks
             if let Some(pos) = pointer {
-                if let Some((target_dir, position, _)) = self.drop_position(ui, state, rows, pos)
-                {
+                if let Some((target_dir, position, _)) = self.drop_position(ui, state, rows, pos) {
                     let marker = ui.painter().add(egui::Shape::Noop);
                     actions.push(Action::Move(DragAndDrop::new(
                         sources, target_dir, position, marker,
@@ -445,14 +446,12 @@ impl<'a> TreeView<'a> {
                     egui::StrokeKind::Inside,
                 ))
             }
-            DirPosition::Before(_) => egui::Shape::line_segment(
-                [row.rect.left_top(), row.rect.right_top()],
-                stroke,
-            ),
-            _ => egui::Shape::line_segment(
-                [row.rect.left_bottom(), row.rect.right_bottom()],
-                stroke,
-            ),
+            DirPosition::Before(_) => {
+                egui::Shape::line_segment([row.rect.left_top(), row.rect.right_top()], stroke)
+            }
+            _ => {
+                egui::Shape::line_segment([row.rect.left_bottom(), row.rect.right_bottom()], stroke)
+            }
         };
 
         let target_info = target.map(|id| NodeInfo { id, is_dir: true });
@@ -600,13 +599,12 @@ impl<'a> TreeView<'a> {
             .cursor()
             .and_then(|c| rows.iter().position(|r| &r.info.id == c));
 
-        let shift_held = self.settings.allow_multi_select
-            && ui.input(|i| i.modifiers.shift_only());
+        let shift_held = self.settings.allow_multi_select && ui.input(|i| i.modifiers.shift_only());
 
         let select_index = |index: usize,
-                               state: &mut TreeViewState<Id_>,
-                               actions: &mut Vec<Action<Id_>>,
-                               ui: &Ui| {
+                            state: &mut TreeViewState<Id_>,
+                            actions: &mut Vec<Action<Id_>>,
+                            ui: &Ui| {
             let row = &rows[index];
             if shift_held && state.pivot().is_some() {
                 let pivot = state.pivot().cloned().unwrap();
@@ -647,10 +645,7 @@ impl<'a> TreeView<'a> {
                 self.toggle_dir(ui, state, row, actions);
             } else if row.depth > 0 {
                 // Jump to the parent: nearest earlier row one level up.
-                if let Some(parent) = rows[..i]
-                    .iter()
-                    .rposition(|r| r.depth == row.depth - 1)
-                {
+                if let Some(parent) = rows[..i].iter().rposition(|r| r.depth == row.depth - 1) {
                     select_index(parent, state, actions, ui);
                 }
             }
@@ -689,12 +684,14 @@ impl<'a> TreeView<'a> {
 }
 
 fn consume_key(ui: &Ui, key: Key) -> bool {
-    ui.ctx().input_mut(|i| {
-        i.consume_key(Modifiers::NONE, key) || i.consume_key(Modifiers::SHIFT, key)
-    })
+    ui.ctx()
+        .input_mut(|i| i.consume_key(Modifiers::NONE, key) || i.consume_key(Modifiers::SHIFT, key))
 }
 
-fn selected_infos<Id_: NodeId>(state: &TreeViewState<Id_>, rows: &[Row<Id_>]) -> Vec<NodeInfo<Id_>> {
+fn selected_infos<Id_: NodeId>(
+    state: &TreeViewState<Id_>,
+    rows: &[Row<Id_>],
+) -> Vec<NodeInfo<Id_>> {
     state
         .selected()
         .iter()
@@ -771,7 +768,9 @@ pub(crate) fn row_metrics(ui: &Ui, settings: &TreeViewSettings) -> RowMetrics {
         .unwrap_or_else(|| ui.spacing().interact_size.y);
     RowMetrics {
         row_height,
-        indent: settings.indent.unwrap_or_else(|| ui.spacing().indent * 0.75),
+        indent: settings
+            .indent
+            .unwrap_or_else(|| ui.spacing().indent * 0.75),
         closer_width: ui.spacing().icon_width,
         icon_size: settings.icon_size.unwrap_or(row_height * 0.7),
         gap: ui.spacing().item_spacing.x.max(4.0),

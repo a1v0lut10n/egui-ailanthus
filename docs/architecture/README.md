@@ -15,7 +15,7 @@ owned by aivolution-meta's `docs/README.md`; this repo's docs follow it.
 |-------------------|------------|
 | `tree-view`       | The core `TreeView` widget: builder API, id-keyed state, row layout, input handling, actions. |
 | `decoration`      | The decoration system: built-in painted `Icon` set, badge overlays, trailing slots, row-paint hooks, custom icon sources. |
-| `examples`        | The `examples/` binaries demonstrating each feature (also serve as manual test surfaces and the wasm demo source). |
+| `examples`        | The `examples/` binaries demonstrating each feature (also manual test surfaces and the egui-MCP inspection targets), plus the `demo/` playground crate — the trunk-built wasm demo deployed to GitHub Pages by CI. |
 
 ## Aspects
 

@@ -27,7 +27,11 @@ fn harness<'a>() -> Harness<'a, State> {
                     let _ = ui.button("Fallback entry");
                 })
                 .show_state(ui, tree_state, |tree| {
-                    tree.dir(Node::new("dir".to_owned()).label("dir").icon(Icon::folder()));
+                    tree.dir(
+                        Node::new("dir".to_owned())
+                            .label("dir")
+                            .icon(Icon::folder()),
+                    );
                     tree.leaf(
                         Node::new("dir/a".to_owned())
                             .label("alpha")

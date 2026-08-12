@@ -3,10 +3,10 @@ use egui::{
 };
 
 use crate::{
-    Node, NodeId, NodeInfo, RowContext, TreeViewSettings, TreeViewState,
+    Node, NodeId, NodeInfo, RowContext, RowMetrics, TreeViewSettings, TreeViewState,
     icon::{self, IconContext, IconSource},
     node::ContextMenuFn,
-    row_metrics, RowMetrics,
+    row_metrics,
     state::PendingReveal,
 };
 
@@ -89,10 +89,7 @@ impl<'ui, 'state, 'nodes, Id_: NodeId> TreeBuilder<'ui, 'state, 'nodes, Id_> {
     /// builder (cull caller-side only for very large trees).
     pub fn dir(&mut self, node: Node<'nodes, Id_>) -> bool {
         let parents_open = self.parents_open();
-        let open = self
-            .state
-            .is_open(&node.id)
-            .unwrap_or(node.default_open);
+        let open = self.state.is_open(&node.id).unwrap_or(node.default_open);
         let id = node.id.clone();
         self.check_reveal(&id, true);
         if parents_open {
@@ -202,19 +199,16 @@ impl<'ui, 'state, 'nodes, Id_: NodeId> TreeBuilder<'ui, 'state, 'nodes, Id_> {
             Order::Tooltip,
             self.interact_id.with("drag_overlay"),
         ));
-        let origin = pointer + vec2(12.0, index as f32 * (m.row_height * 0.9) - m.row_height * 0.5);
+        let origin = pointer
+            + vec2(
+                12.0,
+                index as f32 * (m.row_height * 0.9) - m.row_height * 0.5,
+            );
         let ghost_rect = Rect::from_min_size(
             origin,
-            vec2(
-                m.icon_size + m.gap + galley.size().x + 12.0,
-                m.row_height,
-            ),
+            vec2(m.icon_size + m.gap + galley.size().x + 12.0, m.row_height),
         );
-        painter.rect_filled(
-            ghost_rect,
-            3.0,
-            visuals.panel_fill.gamma_multiply(0.9),
-        );
+        painter.rect_filled(ghost_rect, 3.0, visuals.panel_fill.gamma_multiply(0.9));
         if let Some(spec) = &node.icon {
             let icon_slot = Rect::from_min_size(
                 pos2(ghost_rect.left() + 4.0, ghost_rect.top()),
@@ -305,7 +299,15 @@ impl<'ui, 'state, 'nodes, Id_: NodeId> TreeBuilder<'ui, 'state, 'nodes, Id_> {
         }
 
         let is_selected = self.state.is_selected(&node.id);
-        self.accesskit_row(&node.id, galley.text(), is_dir, open, is_selected, depth, rect);
+        self.accesskit_row(
+            &node.id,
+            galley.text(),
+            is_dir,
+            open,
+            is_selected,
+            depth,
+            rect,
+        );
 
         // While a drag is active, paint dragged rows as a ghost at the
         // pointer and dim them in place.
