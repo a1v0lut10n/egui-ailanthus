@@ -320,11 +320,11 @@ impl<'ui, 'state, 'nodes, Id_: NodeId> TreeBuilder<'ui, 'state, 'nodes, Id_> {
             self.paint_drag_ghost(&node, &galley, is_dir, open);
         }
 
-        let is_hovered = self
-            .ui
-            .ctx()
-            .pointer_hover_pos()
-            .is_some_and(|p| rect.contains(p));
+        // Layer-aware: a popup or menu above the tree must block row
+        // hover (raw `pointer_hover_pos` ignores occlusion — field-caught
+        // in aicogito: a combo's items highlighted tree rows through the
+        // popup).
+        let is_hovered = self.ui.rect_contains_pointer(rect);
 
         // Row background: stripe, then hover, then selection.
         let painter = self.ui.painter();
