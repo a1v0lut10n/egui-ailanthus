@@ -19,7 +19,7 @@ and WebAssembly.
 
 ## Goals
 
-- **Track the latest stable egui.** The crate builds against egui 0.36.x and
+- **Track the latest stable egui.** The crate builds against egui 0.37.x and
   releases in lockstep with egui minors, so downstream apps are never
   version-locked by their tree widget.
 - **Decoration-first API.** Controlling node presentation is the point:
@@ -30,7 +30,7 @@ and WebAssembly.
   culling for large trees.
 
 ```rust
-let (_response, actions) = TreeView::new(egui::Id::new("tree"))
+let (_response, actions) = TreeView::new(egui::Id::unique("tree"))
     .show_state(ui, &mut state, |tree| {
         tree.dir(Node::new("src").label("src").icon(Icon::folder()));
         tree.leaf(Node::new("src/main.rs").label("main.rs").icon(Icon::FileRust));

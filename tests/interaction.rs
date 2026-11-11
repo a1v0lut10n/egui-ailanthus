@@ -22,7 +22,7 @@ fn harness<'a>() -> Harness<'a, State> {
                 actions,
                 deleted,
             } = s;
-            let (_response, new_actions) = TreeView::new(egui::Id::new("t"))
+            let (_response, new_actions) = TreeView::new(egui::Id::unique("t"))
                 .fallback_context_menu(|ui| {
                     let _ = ui.button("Fallback entry");
                 })

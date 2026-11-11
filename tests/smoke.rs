@@ -3,7 +3,7 @@ use egui_ailanthus::{Icon, Node, TreeView, TreeViewState};
 fn show_frame(state: &mut TreeViewState<&'static str>) {
     egui::__run_test_ui(|ui| {
         let (_response, _actions) =
-            TreeView::new(egui::Id::new("t")).show_state(ui, state, |tree| {
+            TreeView::new(egui::Id::unique("t")).show_state(ui, state, |tree| {
                 tree.dir(Node::new("dir").label("dir").icon(Icon::folder()));
                 tree.leaf(Node::new("dir/child").label("child").icon(Icon::FileRust));
                 tree.close_dir();

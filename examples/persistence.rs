@@ -22,7 +22,7 @@ impl eframe::App for App {
             ui.label("Toggle and select, then restart the app — state persists.");
             // `show` with the persistence feature stores state persistently;
             // node ids just need to be serde-serializable (String is).
-            let (_response, _actions) = TreeView::new(egui::Id::new("persist")).show(
+            let (_response, _actions) = TreeView::new(egui::Id::unique("persist")).show(
                 ui,
                 |tree: &mut egui_ailanthus::TreeBuilder<'_, '_, '_, String>| {
                     for top in ["alpha", "beta", "gamma"] {

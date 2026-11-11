@@ -4,6 +4,17 @@ All notable changes to `egui_ailanthus` are documented here. The crate tracks
 the latest stable egui minor and releases in lockstep with it (see
 `docs/reference/release-checklist.md`).
 
+## 0.3.0 — 2026-11-11
+
+Built against **egui 0.37** (lockstep egui-minor bump; no API change of our
+own — `TreeView::new` still takes an `egui::Id`).
+
+- Bumped `egui` to 0.37, dev-deps `eframe` / `egui_kittest` to 0.37, and the
+  demo crate's `egui` / `eframe`.
+- Docs, examples, tests and the demo construct the tree id with
+  `Id::unique(..)` instead of `Id::new(..)`, which egui 0.37 deprecates
+  (`Id::new` was already an alias for `Id::unique`, so ids are unchanged).
+
 ## 0.2.1 — 2026-08-23
 
 - Row hover is layer-aware: `Ui::rect_contains_pointer` instead of raw

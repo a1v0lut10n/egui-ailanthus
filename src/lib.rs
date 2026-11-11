@@ -13,7 +13,7 @@
 //! ```no_run
 //! # use egui_ailanthus::{TreeView, TreeViewState, Node, Icon};
 //! # fn demo(ui: &mut egui::Ui, state: &mut TreeViewState<&'static str>) {
-//! let (_response, actions) = TreeView::new(egui::Id::new("tree"))
+//! let (_response, actions) = TreeView::new(egui::Id::unique("tree"))
 //!     .show_state(ui, state, |tree| {
 //!         tree.dir(Node::new("src").label("src").icon(Icon::folder()));
 //!         tree.leaf(Node::new("src/main.rs").label("main.rs").icon(Icon::FileRust));
