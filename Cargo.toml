@@ -3,7 +3,7 @@ members = ["demo"]
 
 [package]
 name = "egui_ailanthus"
-version = "0.2.1"
+version = "0.3.0"
 edition = "2024"
 rust-version = "1.85"
 authors = ["Aivolution GmbH"]
@@ -15,14 +15,14 @@ categories = ["gui"]
 include = ["src/**/*.rs", "Cargo.toml", "LICENSE-MIT", "LICENSE-APACHE", "README.md"]
 
 [dependencies]
-egui = { version = "0.36", default-features = false }
+egui = { version = "0.37", default-features = false }
 serde = { version = "1", features = ["derive"], optional = true }
 
 [dev-dependencies]
 # `inspection` lets any example serve the egui inspection protocol when run
 # with EGUI_INSPECTION=1, so the egui MCP server can drive it.
-eframe = { version = "0.36", features = ["persistence", "inspection"] }
-egui_kittest = "0.36.1"
+eframe = { version = "0.37", features = ["persistence", "inspection"] }
+egui_kittest = "0.37"
 
 [features]
 default = []

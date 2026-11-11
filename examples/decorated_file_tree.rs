@@ -20,7 +20,7 @@ struct App {
 
 impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        egui::Panel::left(egui::Id::new("tree-panel"))
+        egui::Panel::left(egui::Id::unique("tree-panel"))
             .default_size(280.0)
             .show(ui, |ui| {
                 egui::ScrollArea::both()
@@ -44,7 +44,7 @@ impl eframe::App for App {
 
 impl App {
     fn tree(&mut self, ui: &mut egui::Ui) {
-        let (_response, actions) = TreeView::new(egui::Id::new("decorated"))
+        let (_response, actions) = TreeView::new(egui::Id::unique("decorated"))
             .striped(true)
             .show_state(ui, &mut self.state, |tree| {
                 tree.dir(Node::new("docs").label("docs").icon(Icon::folder()));

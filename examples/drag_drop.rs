@@ -158,7 +158,7 @@ impl eframe::App for App {
         egui::CentralPanel::default().show(ui, |ui| {
             ui.label(&self.status);
             ui.separator();
-            let (_response, actions) = TreeView::new(egui::Id::new("dnd"))
+            let (_response, actions) = TreeView::new(egui::Id::unique("dnd"))
                 .fallback_context_menu(|ui| {
                     let _ = ui.button("Add root item…");
                 })

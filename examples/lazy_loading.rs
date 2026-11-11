@@ -85,7 +85,7 @@ impl eframe::App for App {
         egui::CentralPanel::default().show(ui, |ui| {
             ui.label("Every directory loads its children the first time it is opened.");
             let (_response, actions) =
-                TreeView::new(egui::Id::new("lazy")).show_state(ui, &mut self.state, |tree| {
+                TreeView::new(egui::Id::unique("lazy")).show_state(ui, &mut self.state, |tree| {
                     tree.dir(Node::new("/".to_owned()).label("root").icon(Icon::folder()));
                     Self::build_level(tree, &self.children, "/");
                     tree.close_dir();

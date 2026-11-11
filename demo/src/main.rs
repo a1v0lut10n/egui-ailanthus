@@ -305,7 +305,7 @@ fn find_dir_mut(entries: &mut Vec<Entry>, id: u32) -> Option<&mut Entry> {
 
 impl eframe::App for DemoApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
-        egui::Panel::left(egui::Id::new("settings"))
+        egui::Panel::left(egui::Id::unique("settings"))
             .default_size(260.0)
             .show(ui, |ui| {
                 egui::ScrollArea::vertical()
@@ -316,7 +316,7 @@ impl eframe::App for DemoApp {
             egui::ScrollArea::both()
                 .auto_shrink([false, false])
                 .show(ui, |ui| {
-                    let (_response, actions) = TreeView::new(egui::Id::new("playground"))
+                    let (_response, actions) = TreeView::new(egui::Id::unique("playground"))
                         .with_settings(self.settings.clone())
                         .fallback_context_menu(|ui| {
                             let _ = ui.button("Add root item…");

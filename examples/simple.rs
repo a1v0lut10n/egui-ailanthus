@@ -16,7 +16,7 @@ impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ui, |ui| {
             let node = |id: &str| Node::new(id.to_owned()).label(id.rsplit('/').next().unwrap());
-            let (_response, actions) = TreeView::new(egui::Id::new("tree")).show(
+            let (_response, actions) = TreeView::new(egui::Id::unique("tree")).show(
                 ui,
                 |tree: &mut egui_ailanthus::TreeBuilder<'_, '_, '_, String>| {
                     tree.dir(node("root"));
